@@ -1,34 +1,24 @@
-﻿using UnityEngine;
-
-
+using UnityEngine;
 using EvolutionaryPerceptron;
+
 [RequireComponent (typeof (Flappy))]
 public class NeuralFlappy : BotHandler {
+
+    /// <value name="showRays"> Boolean that give the information of the raycast if is true </value>
     public bool showRays;
+
+    /// <value name="maxDistance"> Maximum distance that the blooper could see </value>
     public float maxDistance;
-    private Flappy flappy;
+
+    /// <value name="blooper"> Object that is going to interact with the interface </value>
+    private Flappy blooper;
+
     private int inputSize;
+
     private double[, ] lastInputs;
+
+    /// <value name="inputs"> distance obstacles, and the position of the blooper </value>
     private double[, ] inputs;
-
-    protected override void Start () {
-        base.Start ();
-        flappy = GetComponent<Flappy> ();
-        inputSize = 10;
-        lastInputs = new double[1, inputSize];
-    }
-
-    private void Update () {
-        var time = Time.deltaTime;
-        inputs = GetInputs ();
-        inputs = ProcessInputs (inputs, time);
-        var output = nb.SetInput (inputs);
-        if (output[0, 0] > 0.5f) {
-            flappy.jumpRequest = true;
-        }
-
-        nb.AddFitness (time);
-    }
 
     private double[, ] ProcessInputs (double[, ] inputs, double time) {
         var currentInput = new double[1, inputSize]; // Sensor info
@@ -45,59 +35,75 @@ public class NeuralFlappy : BotHandler {
         return currentInput;
     }
 
+    /// <summary>
+        /// Check if the ray hit an obstacle
+    /// </summary>
+    private bool rayHitObstacle (RaycastHit2D ray) {
+        return (ray.collider != null) && !(!ray.collider.CompareTag("Obstacle"));
+    }
+
+    /// <summary>
+        /// Shot a raycast and check if the ray hit an 'Obstacle'.
+    /// </summary>
+    /// <param name='direction'> The direction in which the ray will be shot. </param>
+    /// <param name='obstacles'> A reference to the previously hitted obstacles </param>
+    /// <returns> The distance to the hitted obstacled (max distance posible if it was not hitted)</returns>
+    private float getDistanceToObstacleHitted(Vector2 direction, ref Obstacles obstacles) {
+        RaycastHit2D ray = Physics2D.Raycast (transform.position, direction, maxDistance);
+        float distanceToObstacle = ray.collider != null ? ray.distance : maxDistance;
+
+        if (showRays) Debug.DrawRay (transform.position, direction * distanceToObstacle);
+
+        if ((obstacles == null) && rayHitObstacle(ray)) obstacles = ray.collider.GetComponentInParent<Obstacles>();
+        return distanceToObstacle;
+    }
+
+
+    /// <summary>
+        /// Obtain the distance to the obstacles located at the right, up right and down right.
+        /// Also gets the position of the blooper and theposition of the obstacle hitted.
+    /// </summary>
     private double[, ] GetInputs () {
         Obstacles o = null;
 
-        var ray = Physics2D.Raycast (transform.position, Vector2.right, maxDistance);
-        var n1 = ray.collider != null ? ray.distance : maxDistance;
-
-        if (showRays) {
-            Debug.DrawRay (transform.position, Vector2.right * n1);
-        }
-
-        if (ray.collider != null) {
-            if (ray.collider.CompareTag ("Obstacle"))
-                o = ray.collider.GetComponentInParent<Obstacles> ();
-        }
-        ray = Physics2D.Raycast (transform.position, (Vector2.right + Vector2.down).normalized, maxDistance);
-        var n2 = ray.collider != null ? ray.distance : maxDistance;
-
-        if (showRays) {
-            Debug.DrawRay (transform.position, (Vector2.right + Vector2.down).normalized * n2);
-        }
-
-        if (o == null) {
-            if (ray.collider != null) {
-                if (ray.collider.CompareTag ("Obstacle"))
-                    o = ray.collider.GetComponentInParent<Obstacles> ();
-            }
-        }
-
-        ray = Physics2D.Raycast (transform.position, (Vector2.right + Vector2.up).normalized, maxDistance);
-        var n3 = ray.collider != null ? ray.distance : maxDistance;
-
-        if (showRays) {
-            Debug.DrawRay (transform.position, (Vector2.right + Vector2.up).normalized * n3);
-        }
-
-        if (o == null) {
-            if (ray.collider != null) {
-                if (ray.collider.CompareTag ("Obstacle"))
-                    o = ray.collider.GetComponentInParent<Obstacles> ();
-            }
-        }
-
-        var n4 = transform.position.y;
-
-        var n5 = o == null ? 0 : o.center.position.y;
-
+        float n1 = getDistanceToObstacleHitted(Vector2.right, ref o);
+        float n2 = getDistanceToObstacleHitted((Vector2.right + Vector2.down).normalized, ref o);
+        float n3 = getDistanceToObstacleHitted ((Vector2.right + Vector2.up).normalized, ref o);
+        float n4 = transform.position.y;
+        float n5 = o == null ? 0 : o.center.position.y;
         return new double[1, 5] { { n1, n2, n3, n4, n5 } };
     }
 
-    private void OnTriggerEnter2D (Collider2D collision) {
-        if (collision.CompareTag ("Obstacle")) {
-            nb.Destroy ();
-        }
+    /// <sumary>
+        /// Some parameters are initialized here
+    /// </sumary>
+    protected override void Start () {
+        base.Start ();
+        blooper = GetComponent<Flappy> ();
+        inputSize = 10;
+        lastInputs = new double[1, inputSize];
     }
 
+    /// <sumary>
+        /// This function update some valors of diferent parameters
+    /// </sumary>
+    private void Update () {
+        var time = Time.deltaTime;
+        inputs = GetInputs ();
+        inputs = ProcessInputs (inputs, time);
+        var output = nb.SetInput (inputs);
+
+        if (output[0, 0] > 0.5f) blooper.jumpRequest = true;
+
+        nb.AddFitness (time);
+    }
+
+    /// <sumary>
+        /// Check if the blooper crashs with some coral (Obstacle).
+        /// The blooper disappear if so.
+    /// </sumary>
+    private void OnTriggerEnter2D (Collider2D collision) {
+        if (!collision.CompareTag ("Obstacle")) return;
+        nb.Destroy ();
+    }
 }
