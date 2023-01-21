@@ -9,7 +9,7 @@ public class Flappy : MonoBehaviour {
 
     /// <summary>
         /// boot function in which  the rigidbody of our blooper is collected
-    /// </sumary>
+    /// </summary>
     private void Start() {
         rb = GetComponent<Rigidbody2D>();
     }
@@ -20,7 +20,7 @@ public class Flappy : MonoBehaviour {
     /// <summary>
         /// Update function we rotate the orientation of the blooper when he jumps.
         /// it depends on the speed.
-    /// </sumary>
+    /// </summary>
     private void Update() {
         if (rb.velocity.y > 0) {
             transform.eulerAngles = new Vector3(0, 0, 45);
@@ -34,7 +34,7 @@ public class Flappy : MonoBehaviour {
     /// <summary>
         /// Check if the blooper wants to jump. If a jump is requested, the
         /// blooper jumps (adding an up force on the rigidbody).
-    /// </sumary>
+    /// </summary>
     private void FixedUpdate() {
         if (!jumpRequest) return;
         jumpRequest = false;

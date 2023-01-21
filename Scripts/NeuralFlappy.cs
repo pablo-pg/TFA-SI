@@ -1,10 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 using EvolutionaryPerceptron;
 
 [RequireComponent (typeof (Flappy))]
 public class NeuralFlappy : BotHandler {
 
-    /// <value name="showRays"> Boolean that give the information of the raycast if is true </value>
+    /// <value name="showRays"> Boolean that give the information of the ray-cast if is true </value>
     public bool showRays;
 
     /// <value name="maxDistance"> Maximum distance that the blooper could see </value>
@@ -43,12 +43,12 @@ public class NeuralFlappy : BotHandler {
     }
 
     /// <summary>
-        /// Shot a raycast and check if the ray hit an 'Obstacle'.
+        /// Shot a ray-cast and check if the ray hit an 'Obstacle'.
     /// </summary>
     /// <param name='direction'> The direction in which the ray will be shot. </param>
-    /// <param name='obstacles'> A reference to the previously hitted obstacles </param>
-    /// <returns> The distance to the hitted obstacled (max distance posible if it was not hitted)</returns>
-    private float getDistanceToObstacleHitted(Vector2 direction, ref Obstacles obstacles) {
+    /// <param name='obstacles'> A reference to the previously hit obstacles </param>
+    /// <returns> The distance to the hit obstacle (max distance posible if it was not hit)</returns>
+    private float getDistanceToObstacleHit(Vector2 direction, ref Obstacles obstacles) {
         RaycastHit2D ray = Physics2D.Raycast (transform.position, direction, maxDistance);
         float distanceToObstacle = ray.collider != null ? ray.distance : maxDistance;
 
@@ -61,22 +61,22 @@ public class NeuralFlappy : BotHandler {
 
     /// <summary>
         /// Obtain the distance to the obstacles located at the right, up right and down right.
-        /// Also gets the position of the blooper and theposition of the obstacle hitted.
+        /// Also gets the position of the blooper and the position of the obstacle hit.
     /// </summary>
     private double[, ] GetInputs () {
         Obstacles o = null;
 
-        float n1 = getDistanceToObstacleHitted(Vector2.right, ref o);
-        float n2 = getDistanceToObstacleHitted((Vector2.right + Vector2.down).normalized, ref o);
-        float n3 = getDistanceToObstacleHitted ((Vector2.right + Vector2.up).normalized, ref o);
+        float n1 = getDistanceToObstacleHit(Vector2.right, ref o);
+        float n2 = getDistanceToObstacleHit((Vector2.right + Vector2.down).normalized, ref o);
+        float n3 = getDistanceToObstacleHit ((Vector2.right + Vector2.up).normalized, ref o);
         float n4 = transform.position.y;
         float n5 = o == null ? 0 : o.center.position.y;
         return new double[1, 5] { { n1, n2, n3, n4, n5 } };
     }
 
-    /// <sumary>
+    /// <summary>
         /// Some parameters are initialized here
-    /// </sumary>
+    /// </summary>
     protected override void Start () {
         base.Start ();
         blooper = GetComponent<Flappy> ();
@@ -84,9 +84,9 @@ public class NeuralFlappy : BotHandler {
         lastInputs = new double[1, inputSize];
     }
 
-    /// <sumary>
-        /// This function update some valors of diferent parameters
-    /// </sumary>
+    /// <summary>
+        /// This function update some valors of different parameters
+    /// </summary>
     private void Update () {
         var time = Time.deltaTime;
         inputs = GetInputs ();
@@ -98,10 +98,10 @@ public class NeuralFlappy : BotHandler {
         nb.AddFitness (time);
     }
 
-    /// <sumary>
-        /// Check if the blooper crashs with some coral (Obstacle).
+    /// <summary>
+        /// Check if the blooper crashes with some coral (Obstacle).
         /// The blooper disappear if so.
-    /// </sumary>
+    /// </summary>
     private void OnTriggerEnter2D (Collider2D collision) {
         if (!collision.CompareTag ("Obstacle")) return;
         nb.Destroy ();
