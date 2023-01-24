@@ -3,7 +3,7 @@ using TMPro;
 
 class ScoreSystem : MonoBehaviour {
     [Tooltip("The notifier that will tell us when to reset the score")]
-    [SerializeField] private FlappyMendelMachine notifier;
+    [SerializeField] private BlooperMendelMachine notifier;
 
     [Tooltip("The text that displays the score")]
     [SerializeField] private TMP_Text _scoreText;
