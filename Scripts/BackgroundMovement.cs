@@ -21,12 +21,12 @@ public class BackgroundMovement : MonoBehaviour {
     /// <summary>
     /// How many pixels to jump
     /// </summary>
-    float jumpPostion = 50;
+    private float jumpPostion;
 
     /// <summary>
     /// The maximum position to the left of the images to jump
     /// </summary>
-    public float leftLimit = -10;
+    public float leftLimit = -50;
 
     /// <summary>
     /// The position, rotation and scale of the first background
@@ -51,7 +51,7 @@ public class BackgroundMovement : MonoBehaviour {
     /// <summary>
         /// Moves the background to the left and if it exceeds a position it jumps to the right
     /// </summary>
-    void Update() {
+    void LateUpdate() {
         posBackground1.position += Vector3.left * speed * Time.deltaTime;
         if (posBackground1.position.x < leftLimit) {
             var pos = posBackground1.position + Vector3.right * jumpPostion;
