@@ -42,4 +42,3 @@ public class Obstacles : MonoBehaviour {
         transform.position = startPoint;
     }
 }
-
